@@ -1,36 +1,34 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" buffer="16kb" errorPage="" %>
 <%@ page import="com.example.pttk_final.Entity.Member" %>
 <%@ page import="com.example.pttk_final.Entity.Product" %>
 <%@ page import="java.util.List" %>
-<%!
-    // Helper method to escape HTML attributes
-    private String escapeHtml(String text) {
-        if (text == null) return "";
-        return text.replace("&", "&amp;")
-                   .replace("\"", "&quot;")
-                   .replace("'", "&#39;")
-                   .replace("<", "&lt;")
-                   .replace(">", "&gt;");
-    }
-%>
+<%@ page import="java.util.ArrayList" %>
 <%
-    Member user = (Member) session.getAttribute("user");
-    String contextPath = request.getContextPath();
-    if (user == null) {
-        response.sendRedirect(contextPath + "/view/login.jsp");
-        return;
-    }
-    String keyword = request.getParameter("productName") == null ? "" : request.getParameter("productName");
-    @SuppressWarnings("unchecked")
-    List<Product> products = (List<Product>) request.getAttribute("products");
-    String flashSuccess = (String) session.getAttribute("purchaseSuccess");
-    if (flashSuccess != null) {
-        session.removeAttribute("purchaseSuccess");
-    }
-    String flashError = (String) session.getAttribute("purchaseError");
-    if (flashError != null) {
-        session.removeAttribute("purchaseError");
-    }
+    try {
+        response.setContentType("text/html;charset=UTF-8");
+        Member user = (Member) session.getAttribute("user");
+        String contextPath = request.getContextPath();
+        if (user == null) {
+            response.sendRedirect(contextPath + "/view/login.jsp");
+            return;
+        }
+        String keyword = request.getParameter("productName");
+        if (keyword == null) keyword = "";
+        
+        @SuppressWarnings("unchecked")
+        List<Product> products = (List<Product>) request.getAttribute("products");
+        if (products == null) {
+            products = new ArrayList<Product>();
+        }
+        
+        String flashSuccess = (String) session.getAttribute("purchaseSuccess");
+        if (flashSuccess != null) {
+            session.removeAttribute("purchaseSuccess");
+        }
+        String flashError = (String) session.getAttribute("purchaseError");
+        if (flashError != null) {
+            session.removeAttribute("purchaseError");
+        }
 %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -550,6 +548,12 @@
         <% if (flashError != null) { %>
             <div class="alert alert-error"><%= flashError %></div>
         <% } %>
+        <% 
+            String errorMsg = (String) request.getAttribute("purchaseError");
+            if (errorMsg != null) { 
+        %>
+            <div class="alert alert-error"><%= errorMsg %></div>
+        <% } %>
 
         <% if (products != null && !products.isEmpty()) { %>
         <div class="results-card">
@@ -569,18 +573,26 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <% for (Product product : products) { %>
+                        <% 
+                        for (Product product : products) { 
+                            String productName = product.getName() != null ? product.getName() : "";
+                            String productBrand = product.getBrand() != null ? product.getBrand() : "-";
+                            String productUnit = product.getUnit() != null ? product.getUnit() : "";
+                            // Escape for HTML attributes
+                            String safeProductName = productName.replace("\"", "&quot;").replace("'", "&#39;");
+                            String safeProductUnit = productUnit.replace("\"", "&quot;").replace("'", "&#39;");
+                        %>
                         <tr id="search-row-<%= product.getId() %>">
-                            <td><%= product.getName() %></td>
-                            <td><%= product.getBrand() == null ? "-" : product.getBrand() %></td>
-                            <td><%= product.getUnit() %></td>
+                            <td><%= productName %></td>
+                            <td><%= productBrand %></td>
+                            <td><%= productUnit %></td>
                             <td><%= String.format("%,.0f", product.getUnitPrice()) %></td>
                             <td style="text-align: center;">
                                 <button 
                                     class="btn btn-primary btn-add-simple btn-select-product" 
                                     data-id="<%= product.getId() %>"
-                                    data-name="<%= escapeHtml(product.getName()) %>"
-                                    data-unit="<%= escapeHtml(product.getUnit()) %>"
+                                    data-name="<%= safeProductName %>"
+                                    data-unit="<%= safeProductUnit %>"
                                     data-price="<%= product.getUnitPrice() %>"
                                     type="button"
                                 >
@@ -758,41 +770,27 @@
             for (let id in selectedProducts) {
                 const product = selectedProducts[id];
                 const total = product.quantity * product.unitPrice;
+                const formattedTotal = formatCurrency(total);
                 
                 const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td><strong>${product.name}</strong></td>
-                    <td>${product.unit}</td>
-                    <td>
-                        <input 
-                            type="number" 
-                            value="${product.quantity}" 
-                            min="1" 
-                            onchange="updateQuantity(${id}, this.value)"
-                            style="width: 100%; padding: 8px 12px; border: 2px solid var(--border); border-radius: 6px; font-size: 14px;"
-                        >
-                    </td>
-                    <td>
-                        <input 
-                            type="number" 
-                            value="${product.unitPrice}" 
-                            min="0" 
-                            step="0.01"
-                            onchange="updatePrice(${id}, this.value)"
-                            style="width: 100%; padding: 8px 12px; border: 2px solid var(--border); border-radius: 6px; font-size: 14px;"
-                        >
-                    </td>
-                    <td><strong>${formatCurrency(total)}</strong></td>
-                    <td style="text-align: center;">
-                        <button 
-                            class="btn btn-danger btn-sm" 
-                            onclick="removeProduct(${id})"
-                            type="button"
-                        >
-                            Xóa
-                        </button>
-                    </td>
-                `;
+                row.innerHTML = '<td><strong>' + product.name + '</strong></td>' +
+                    '<td>' + product.unit + '</td>' +
+                    '<td>' +
+                        '<input type="number" value="' + product.quantity + '" min="1" ' +
+                        'onchange="updateQuantity(' + id + ', this.value)" ' +
+                        'style="width: 100%; padding: 8px 12px; border: 2px solid var(--border); border-radius: 6px; font-size: 14px;">' +
+                    '</td>' +
+                    '<td>' +
+                        '<input type="number" value="' + product.unitPrice + '" min="0" step="0.01" ' +
+                        'onchange="updatePrice(' + id + ', this.value)" ' +
+                        'style="width: 100%; padding: 8px 12px; border: 2px solid var(--border); border-radius: 6px; font-size: 14px;">' +
+                    '</td>' +
+                    '<td><strong>' + formattedTotal + '</strong></td>' +
+                    '<td style="text-align: center;">' +
+                        '<button class="btn btn-danger btn-sm" onclick="removeProduct(' + id + ')" type="button">' +
+                            'Xóa' +
+                        '</button>' +
+                    '</td>';
                 tbody.appendChild(row);
             }
 
@@ -853,3 +851,11 @@
     </script>
 </body>
 </html>
+<%
+        out.flush();
+    } catch (Exception ex) {
+        ex.printStackTrace();
+        out.println("<div style='padding:20px;color:red;background:#ffeeee;border:1px solid red;'>Lỗi khi tải trang: " + ex.getMessage() + "</div>");
+        out.flush();
+    }
+%>

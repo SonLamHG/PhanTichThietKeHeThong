@@ -108,10 +108,18 @@ public class PurchaseServlet extends HttpServlet {
     }
 
     private void handleProductSearch(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String keyword = request.getParameter("productName");
-        List<Product> products = productDAO.searchProduct(keyword == null ? "" : keyword.trim());
-        request.setAttribute("products", products);
-        forward(request, response, PRODUCT_SEARCH_VIEW);
+        try {
+            String keyword = request.getParameter("productName");
+            List<Product> products = productDAO.searchProduct(keyword == null ? "" : keyword.trim());
+            request.setAttribute("products", products);
+            forward(request, response, PRODUCT_SEARCH_VIEW);
+        } catch (Exception e) {
+            System.err.println("Error in handleProductSearch: " + e.getMessage());
+            e.printStackTrace();
+            request.setAttribute("products", new ArrayList<Product>());
+            request.setAttribute("purchaseError", "Có lỗi xảy ra khi tìm kiếm sản phẩm: " + e.getMessage());
+            forward(request, response, PRODUCT_SEARCH_VIEW);
+        }
     }
 
     private void handleSelectSupplier(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -362,8 +370,15 @@ public class PurchaseServlet extends HttpServlet {
     }
 
     private void preloadProducts(HttpServletRequest request) {
-        List<Product> products = productDAO.searchProduct("");
-        request.setAttribute("products", products);
+        try {
+            List<Product> products = productDAO.searchProduct("");
+            request.setAttribute("products", products);
+        } catch (Exception e) {
+            System.err.println("Error in preloadProducts: " + e.getMessage());
+            e.printStackTrace();
+            request.setAttribute("products", new ArrayList<Product>());
+            request.setAttribute("purchaseError", "Có lỗi xảy ra khi tải danh sách sản phẩm: " + e.getMessage());
+        }
     }
 
     private List<PurchaseDetail> getCart(HttpSession session) {
