@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Click Event</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f0f9ff;
+            border-radius: 6px;
+            border: 1px solid #3b82f6;
+        }
+        .log {
+            background: #1f2937;
+            color: #10b981;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            margin: 4px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Click Event & Data Attributes</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Basic Click</h2>
+        <button class="btn btn-primary btn-select-product" 
+                data-id="1"
+                data-name="Test Product"
+                data-unit="Box"
+                data-price="10000"
+                type="button">
+            + Chọn sản phẩm thông thường
+        </button>
+        <div id="result1" class="result" style="display: none;">
+            <strong>Kết quả:</strong>
+            <div id="result1-content"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Special Characters</h2>
+        <button class="btn btn-primary btn-select-product" 
+                data-id="2"
+                data-name="Test's &quot;Special&quot; Product &amp; &lt;Tag&gt;"
+                data-unit="Cái"
+                data-price="20000"
+                type="button">
+            + Chọn sản phẩm có ký tự đặc biệt
+        </button>
+        <div id="result2" class="result" style="display: none;">
+            <strong>Kết quả:</strong>
+            <div id="result2-content"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Vietnamese Characters</h2>
+        <button class="btn btn-primary btn-select-product" 
+                data-id="3"
+                data-name="Sản phẩm có dấu tiếng Việt"
+                data-unit="Hộp"
+                data-price="30000"
+                type="button">
+            + Chọn sản phẩm tiếng Việt
+        </button>
+        <div id="result3" class="result" style="display: none;">
+            <strong>Kết quả:</strong>
+            <div id="result3-content"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Event Log</h2>
+        <div class="log" id="log"></div>
+        <button class="btn btn-primary" onclick="clearLog()" style="margin-top: 10px;">
+            🗑️ Clear Log
+        </button>
+    </div>
+
+    <script>
+        let selectedProducts = {};
+        const logElement = document.getElementById('log');
+
+        function log(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            const time = new Date().toLocaleTimeString();
+            entry.textContent = `[${time}] ${type.toUpperCase()}: ${message}`;
+            logElement.appendChild(entry);
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(`[${type}]`, message);
+        }
+
+        function clearLog() {
+            logElement.innerHTML = '';
+            log('Log cleared', 'system');
+        }
+
+        // Method 1: Event delegation on document
+        log('Initializing event delegation...', 'system');
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            log('DOMContentLoaded fired', 'system');
+            
+            document.body.addEventListener('click', function(e) {
+                log(`Click detected on: ${e.target.tagName}.${e.target.className}`, 'event');
+                
+                const target = e.target.closest('.btn-select-product');
+                if (target) {
+                    log('Matched .btn-select-product', 'event');
+                    e.preventDefault();
+                    
+                    const id = parseInt(target.dataset.id);
+                    const name = target.dataset.name;
+                    const unit = target.dataset.unit;
+                    const price = parseFloat(target.dataset.price);
+                    
+                    log(`Data extracted: id=${id}, name="${name}", unit="${unit}", price=${price}`, 'data');
+                    
+                    addProduct(id, name, unit, price);
+                } else {
+                    log('No match for .btn-select-product', 'event');
+                }
+            });
+            
+            log('Event listener attached to document.body', 'system');
+        });
+
+        function addProduct(id, name, unit, defaultPrice) {
+            log(`addProduct called: id=${id}`, 'function');
+            
+            if (selectedProducts[id]) {
+                log(`Product ${id} already selected`, 'warning');
+                alert('Sản phẩm này đã được chọn!');
+                return;
+            }
+
+            selectedProducts[id] = {
+                id: id,
+                name: name,
+                unit: unit,
+                quantity: 1,
+                unitPrice: defaultPrice
+            };
+
+            log(`Product ${id} added successfully`, 'success');
+            
+            // Show result
+            const resultDiv = document.getElementById(`result${id}`);
+            const contentDiv = document.getElementById(`result${id}-content`);
+            if (resultDiv && contentDiv) {
+                resultDiv.style.display = 'block';
+                contentDiv.innerHTML = `
+                    <strong>ID:</strong> ${id}<br>
+                    <strong>Tên:</strong> ${name}<br>
+                    <strong>Đơn vị:</strong> ${unit}<br>
+                    <strong>Giá:</strong> ${defaultPrice.toLocaleString('vi-VN')} VNĐ<br>
+                    <strong>✅ Đã thêm thành công!</strong>
+                `;
+            }
+        }
+
+        // Initial log
+        log('Test page loaded', 'system');
+        log('Click on buttons above to test event handling', 'info');
+    </script>
+</body>
+</html>

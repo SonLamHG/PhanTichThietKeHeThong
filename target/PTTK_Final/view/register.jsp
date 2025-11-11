@@ -4,144 +4,365 @@
     String contextPath = request.getContextPath();
 %>
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-    <title>Đăng ký thành viên</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký - Hệ thống quản lý</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
+        * {
             margin: 0;
-            font-family: "Segoe UI", Arial, sans-serif;
-            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #0f172a;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
         }
-        .card {
-            background: #ffffff;
+        
+        body::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            top: -300px;
+            right: -300px;
+        }
+        
+        body::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            bottom: -200px;
+            left: -200px;
+        }
+        
+        .register-container {
+            background: white;
             border-radius: 20px;
-            box-shadow: 0 30px 60px rgba(15, 23, 42, 0.25);
-            padding: 48px 56px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             width: 100%;
-            max-width: 560px;
+            max-width: 640px;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
         }
-        h1 {
-            margin: 0 0 12px;
+        
+        .register-header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
+        
+        .register-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin: 0 auto 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .register-header h1 {
             font-size: 28px;
-            text-align: center;
+            font-weight: 700;
+            margin-bottom: 8px;
         }
-        p.subtitle {
-            margin: 0 0 24px;
-            text-align: center;
-            color: #64748b;
+        
+        .register-header p {
+            font-size: 14px;
+            opacity: 0.9;
         }
-        form {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 18px 24px;
+        
+        .register-body {
+            padding: 40px;
         }
-        .full {
-            grid-column: 1 / -1;
-        }
-        label {
-            display: block;
-            font-weight: 600;
-            color: #1f2a44;
-            margin-bottom: 6px;
-        }
-        input[type="text"], input[type="password"], input[type="date"], input[type="email"] {
-            width: 100%;
-            padding: 12px 14px;
-            border-radius: 12px;
-            border: 1px solid #cbd5f5;
-            font-size: 15px;
-        }
-        button {
-            width: 100%;
-            padding: 12px 18px;
-            border-radius: 999px;
-            border: none;
-            background: #16a34a;
-            color: #ffffff;
-            font-weight: 600;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background 0.2s ease;
-        }
-        button:hover {
-            background: #15803d;
-        }
-        .footer {
-            margin-top: 24px;
-            text-align: center;
-            color: #475569;
-        }
-        .footer a {
-            color: #2563eb;
-            font-weight: 600;
-            text-decoration: none;
-        }
-        .footer a:hover {
-            text-decoration: underline;
-        }
+        
         .alert {
             background: #fee2e2;
             color: #991b1b;
-            padding: 12px 16px;
-            border-radius: 12px;
-            margin-bottom: 18px;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .alert::before {
+            content: '⚠️';
+            font-size: 18px;
+        }
+        
+        form {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        label {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .input-wrapper {
+            position: relative;
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            opacity: 0.5;
+        }
+        
+        input[type="text"],
+        input[type="password"],
+        input[type="email"],
+        input[type="date"] {
+            width: 100%;
+            padding: 14px 16px 14px 48px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            background: #f9fafb;
+        }
+        
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        input[type="email"]:focus,
+        input[type="date"]:focus {
+            outline: none;
+            border-color: #10b981;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+        
+        .btn-register {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+            grid-column: 1 / -1;
+        }
+        
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+        }
+        
+        .btn-register:active {
+            transform: translateY(0);
+        }
+        
+        .register-footer {
+            margin-top: 24px;
             text-align: center;
-            font-weight: 500;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
+            color: #6b7280;
+            font-size: 14px;
+            grid-column: 1 / -1;
+        }
+        
+        .register-footer a {
+            color: #10b981;
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        .register-footer a:hover {
+            color: #059669;
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 640px) {
+            form {
+                grid-template-columns: 1fr;
+            }
+            
+            .register-header,
+            .register-body {
+                padding: 30px 24px;
+            }
         }
     </style>
 </head>
 <body>
-<div class="card">
-    <h1>Đăng ký tài khoản</h1>
-    <p class="subtitle">Điền đầy đủ thông tin bên dưới để tham gia hệ thống</p>
-
-    <% if (errorMsg != null) { %>
-        <div class="alert"><%= errorMsg %></div>
-    <% } %>
-
-    <form action="<%= contextPath %>/register" method="post">
-        <div>
-            <label for="username">Tên đăng nhập</label>
-            <input id="username" type="text" name="username" required>
+    <div class="register-container">
+        <div class="register-header">
+            <div class="register-icon">📝</div>
+            <h1>Đăng ký tài khoản</h1>
+            <p>Điền thông tin để tham gia hệ thống</p>
         </div>
-        <div>
-            <label for="password">Mật khẩu</label>
-            <input id="password" type="password" name="password" required>
+        
+        <div class="register-body">
+            <% if (errorMsg != null) { %>
+                <div class="alert"><%= errorMsg %></div>
+            <% } %>
+            
+            <form action="<%= contextPath %>/register" method="post">
+                <div class="form-group">
+                    <label for="username">Tên đăng nhập</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">👤</span>
+                        <input 
+                            id="username" 
+                            type="text" 
+                            name="username" 
+                            placeholder="Tên đăng nhập"
+                            required
+                            autofocus
+                        >
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Mật khẩu</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">🔒</span>
+                        <input 
+                            id="password" 
+                            type="password" 
+                            name="password" 
+                            placeholder="Mật khẩu"
+                            required
+                        >
+                    </div>
+                </div>
+                
+                <div class="form-group full-width">
+                    <label for="name">Họ và tên</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">📛</span>
+                        <input 
+                            id="name" 
+                            type="text" 
+                            name="name" 
+                            placeholder="Họ và tên đầy đủ"
+                            required
+                        >
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="dob">Ngày sinh</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">📅</span>
+                        <input 
+                            id="dob" 
+                            type="date" 
+                            name="dob" 
+                            required
+                        >
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Số điện thoại</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">📞</span>
+                        <input 
+                            id="phone" 
+                            type="text" 
+                            name="phone" 
+                            placeholder="Số điện thoại"
+                            required
+                        >
+                    </div>
+                </div>
+                
+                <div class="form-group full-width">
+                    <label for="address">Địa chỉ</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">📍</span>
+                        <input 
+                            id="address" 
+                            type="text" 
+                            name="address" 
+                            placeholder="Địa chỉ chi tiết"
+                            required
+                        >
+                    </div>
+                </div>
+                
+                <div class="form-group full-width">
+                    <label for="email">Email</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">📧</span>
+                        <input 
+                            id="email" 
+                            type="email" 
+                            name="email" 
+                            placeholder="email@example.com"
+                            required
+                        >
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-register">Đăng ký ngay</button>
+                
+                <div class="register-footer">
+                    Đã có tài khoản? 
+                    <a href="<%= contextPath %>/view/login.jsp">Đăng nhập ngay</a>
+                </div>
+            </form>
         </div>
-        <div class="full">
-            <label for="name">Họ và tên</label>
-            <input id="name" type="text" name="name" required>
-        </div>
-        <div>
-            <label for="dob">Ngày sinh</label>
-            <input id="dob" type="date" name="dob" required>
-        </div>
-        <div>
-            <label for="phone">Số điện thoại</label>
-            <input id="phone" type="text" name="phone" required>
-        </div>
-        <div class="full">
-            <label for="address">Địa chỉ</label>
-            <input id="address" type="text" name="address" required>
-        </div>
-        <div class="full">
-            <label for="email">Email</label>
-            <input id="email" type="email" name="email" required>
-        </div>
-        <div class="full">
-            <button type="submit">Đăng ký</button>
-        </div>
-    </form>
-
-    <div class="footer">
-        Đã có tài khoản? <a href="<%= contextPath %>/view/login.jsp">Đăng nhập ngay</a>
     </div>
-</div>
 </body>
 </html>

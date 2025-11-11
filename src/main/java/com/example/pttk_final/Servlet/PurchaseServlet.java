@@ -79,6 +79,9 @@ public class PurchaseServlet extends HttpServlet {
             case "addProduct":
                 handleAddProduct(request, response);
                 break;
+            case "addMultipleProducts":
+                handleAddMultipleProducts(request, response);
+                break;
             case "removeProduct":
                 handleRemoveProduct(request, response);
                 break;
@@ -173,6 +176,76 @@ public class PurchaseServlet extends HttpServlet {
             setSuccess(session, "Đã thêm sản phẩm " + product.getName() + " vào phiếu nhập.");
         } catch (NumberFormatException ex) {
             setError(session, "Mã sản phẩm không hợp lệ.");
+        }
+
+        redirect(request, response, "/purchase");
+    }
+
+    private void handleAddMultipleProducts(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession();
+        String[] productIds = request.getParameterValues("productIds");
+        String[] quantities = request.getParameterValues("quantities");
+        String[] unitPrices = request.getParameterValues("unitPrices");
+
+        if (productIds == null || quantities == null || unitPrices == null) {
+            setError(session, "Thiếu thông tin sản phẩm.");
+            redirect(request, response, "/purchase?action=productSearch");
+            return;
+        }
+
+        if (productIds.length != quantities.length || productIds.length != unitPrices.length) {
+            setError(session, "Dữ liệu sản phẩm không hợp lệ.");
+            redirect(request, response, "/purchase?action=productSearch");
+            return;
+        }
+
+        List<PurchaseDetail> cart = getOrCreateCart(session);
+        int addedCount = 0;
+
+        for (int i = 0; i < productIds.length; i++) {
+            try {
+                int productId = Integer.parseInt(productIds[i]);
+                int quantity = parsePositiveInt(quantities[i], 1);
+                float unitPrice = parsePositiveFloat(unitPrices[i], 0);
+
+                if (unitPrice <= 0) {
+                    continue;
+                }
+
+                Product product = productDAO.getProductById(productId);
+                if (product == null) {
+                    continue;
+                }
+
+                boolean existed = false;
+                for (PurchaseDetail detail : cart) {
+                    if (detail.getProduct().getId() == productId) {
+                        detail.setQuantity(detail.getQuantity() + quantity);
+                        detail.setUnitPrice(unitPrice);
+                        existed = true;
+                        break;
+                    }
+                }
+
+                if (!existed) {
+                    PurchaseDetail detail = new PurchaseDetail();
+                    detail.setProduct(product);
+                    detail.setQuantity(quantity);
+                    detail.setUnitPrice(unitPrice);
+                    cart.add(detail);
+                }
+
+                addedCount++;
+            } catch (NumberFormatException ex) {
+                // Skip invalid product
+                continue;
+            }
+        }
+
+        if (addedCount > 0) {
+            setSuccess(session, "Đã thêm " + addedCount + " sản phẩm vào phiếu nhập.");
+        } else {
+            setError(session, "Không có sản phẩm nào được thêm.");
         }
 
         redirect(request, response, "/purchase");
